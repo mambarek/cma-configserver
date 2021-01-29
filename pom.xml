@@ -14,10 +14,17 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>cma-configserver</name>
   <description>Spring cloud config server</description>
+
   <properties>
     <java.version>11</java.version>
     <spring-cloud.version>2020.0.0</spring-cloud.version>
+    <fabric8-docker-maven-plugin>0.34.1</fabric8-docker-maven-plugin>
+    <docker.source.directory>docker</docker.source.directory>
+    <docker.dockerfile>Dockerfile</docker.dockerfile>
+    <docker.repository>mmbarek</docker.repository>
+    <docker.image.name>${project.artifactId}</docker.image.name>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
@@ -33,6 +40,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -51,8 +59,47 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${fabric8-docker-maven-plugin}</version>
+        <configuration>
+          <verbose>true</verbose>
+          <images>
+            <image>
+              <name>${docker.repository}/${docker.image.name}</name>
+              <build>
+                <contextDir>${project.basedir}</contextDir>
+                <dockerFile>${docker.source.directory}/${docker.dockerfile}</dockerFile>
+                <assembly>
+                  <descriptorRef>artifact</descriptorRef>
+                </assembly>
+                <tags>
+                  <tag>${project.version}</tag>
+                </tags>
+              </build>
+              <run>
+                <ports>
+                  <port>8888:8888</port>
+                </ports>
+              </run>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>install</phase>
+            <goals>
+              <goal>build</goal>
+              <!--<goal>push</goal>-->
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
+
   <repositories>
     <repository>
       <id>spring-milestones</id>
